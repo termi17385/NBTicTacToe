@@ -21,6 +21,7 @@ namespace NBTicTacToe.Game
         public void SetID(Vector2Int _id) => tileId = _id;
         public SpriteRenderer Renderer;
 
+        private bool PAUSED => GameManager.paused;
         private bool ColorChange => GameManager.Instance.ChoosingBoard || board.Selected;
         private bool Blocked => board.GetBoard[tileId.x, tileId.y].blocked;
         private bool mouseOver, clicked;
@@ -36,6 +37,12 @@ namespace NBTicTacToe.Game
 
         private void LateUpdate()
         {
+            if(PAUSED)
+            {
+                tileRenderer.color = normalColor;
+                return;
+            }
+
             if (Blocked) tileRenderer.color = normalColor;
             else
             {
@@ -52,8 +59,7 @@ namespace NBTicTacToe.Game
 
         private void OnMouseDown()
         {
-            if (Blocked) return;
-
+            if (Blocked || (!board.Selected && !GameManager.Instance.ChoosingBoard) || PAUSED) return;
             if(GameManager.Instance.ChoosingBoard) GameManager.Instance.SetBoard(board.GetID);
             GameManager.Instance.TileInteraction(tileId);
             if(ColorChange)
@@ -66,14 +72,14 @@ namespace NBTicTacToe.Game
 
         private IEnumerator ResetColor()
         {
-            yield return new WaitForSeconds(.05f);
+            yield return new WaitForSeconds(GameManager.Instance.ResetTime);
             tileRenderer.color = normalColor;
             clicked = false;
         }
 
         private void OnMouseOver()
         {
-            if (Blocked) return;
+            if (Blocked || PAUSED) return;
 
             if(ColorChange && !clicked) tileRenderer.color = onMouseOver;
             mouseOver = true;

@@ -10,10 +10,6 @@ public enum Turn
     none
 }
 
-public delegate void TurnHandler(Vector2Int _position);
-public delegate void GameStarted(Vector2Int _position);
-public delegate void Reset();
-
 namespace NBTicTacToe.Game.Manager
 {
     public class GameManager : MonoBehaviour
@@ -21,10 +17,6 @@ namespace NBTicTacToe.Game.Manager
         const string WINTEXTPARTONE = "Game Over\r\n'";
         const string WINTEXTPARTTWO = "'\r\nIs The Winner";
         
-        public event TurnHandler TurnHandler;
-        public event GameStarted OnStarted;
-        public event Reset OnReset;
-
         #region Variables
         [Header("For Win Condition")]
         [SerializeField] private GameObject winScreenOBJ;
@@ -78,7 +70,7 @@ namespace NBTicTacToe.Game.Manager
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.R) && NetworkManager.Instance.Server.IsRunning) ResetBoards();
+            if (Input.GetKeyDown(KeyCode.R)) ResetBoards();
         }
 
         private void HandleWinCondition()
@@ -87,7 +79,7 @@ namespace NBTicTacToe.Game.Manager
             winScreenOBJ.SetActive(true);
         }
 
-        public void ResetBoards()
+        private void ResetBoards()
         {
             winScreenOBJ.SetActive(false);
             GameOver = false;
@@ -95,15 +87,11 @@ namespace NBTicTacToe.Game.Manager
             boardGenerator.ResetBoards(boards);
             currentTurn = Turn.CROSS;
             uiManager.SetColor(currentTurn);
-
-            OnReset?.Invoke();
         }
 
         #region Gameplay
         public void TileInteraction(Vector2Int _id)
         {
-            TurnHandler?.Invoke(_id);
-
             Turn turn = currentTurn;
             if (!GameOver) HandleBoard(_id);
 
@@ -179,7 +167,6 @@ namespace NBTicTacToe.Game.Manager
         internal void SetBoard(Vector2Int getID)
         {
             currentBoard = boards[getID.x, getID.y];
-            //OnStarted?.Invoke(getID);
         }
         #endregion
     }
